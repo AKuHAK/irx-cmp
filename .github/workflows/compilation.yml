@@ -2,10 +2,6 @@ name: CI
 
 on:
   push:
-    branches: 
-      - '*'
-    tags:
-      - v*
   pull_request:
   workflow_dispatch:
   repository_dispatch:
@@ -16,29 +12,43 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        values: [
-          {docker_tag: "v1.2.0", prefix: "iop"}, 
-          {docker_tag: "latest", prefix: "mipsel-ps2-irx"}, 
-        ]
+        values:
+          [
+            { docker_tag: "v1.2.0", prefix: "iop" },
+            { docker_tag: "latest", prefix: "mipsel-ps2-irx" },
+          ]
 
     container: ps2dev/ps2dev:${{ matrix.values.docker_tag }}
     steps:
+      - uses: actions/checkout@v3
 
-    - name: Check executable audsrv.irx
-      run: |
-        cd $PS2DEV/ps2sdk/iop/irx
-        ${{ matrix.values.prefix }}-readelf -l audsrv.irx
-        ${{ matrix.values.prefix }}-objdump -h audsrv.irx
-        ${{ matrix.values.prefix }}-objdump -s -j .iopmod audsrv.irx
-    
-    - name: Check executable poweroff.irx
-      run: |
-        cd $PS2DEV/ps2sdk/iop/irx
-        ${{ matrix.values.prefix }}-readelf -l poweroff.irx
-        ${{ matrix.values.prefix }}-objdump -h poweroff.irx
-        ${{ matrix.values.prefix }}-objdump -s -j .iopmod poweroff.irx
-        
-    - name: Binutils version
-      run: |
-        ${{ matrix.values.prefix }}-readelf --version
+      - name: Install dependencies
+        run: |
+          apk add build-base git zip gawk python3 py3-pip bash libc-dev
 
+      - name: Compile iopmod
+        run: |
+          git clone https://github.com/frno7/iopmod
+          cd iopmod
+          make tool LDFLAGS=-static V=1
+
+      - name: Check executable audsrv.irx
+        run: |
+          cd $PS2DEV/ps2sdk/iop/irx
+          ${{ matrix.values.prefix }}-readelf -l audsrv.irx
+          ${{ matrix.values.prefix }}-objdump -h audsrv.irx
+          ${{ matrix.values.prefix }}-objdump -s -j .iopmod audsrv.irx
+          ./iopmod/tool/iopmod-info audsrv.irx
+
+      - name: Check executable poweroff.irx
+        run: |
+          cd $PS2DEV/ps2sdk/iop/irx
+          ${{ matrix.values.prefix }}-readelf -l poweroff.irx
+          ${{ matrix.values.prefix }}-objdump -h poweroff.irx
+          ${{ matrix.values.prefix }}-objdump -s -j .iopmod poweroff.irx
+          ./iopmod/tool/iopmod-info poweroff.irx
+
+      - name: Binutils version
+        run: |
+          ${{ matrix.values.prefix }}-readelf --version
+          ./iopmod/tool/iopmod-info --version
