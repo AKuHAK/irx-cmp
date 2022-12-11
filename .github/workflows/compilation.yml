@@ -20,25 +20,31 @@ jobs:
 
     container: ps2dev/ps2dev:${{ matrix.values.docker_tag }}
     steps:
-      - uses: actions/checkout@v3
+
 
       - name: Install dependencies
         run: |
           apk add build-base git zip gawk python3 py3-pip bash libc-dev
 
-      - name: Compile iopmod
+      - uses: actions/checkout@v3
+        name: Compile iopmod
+        with:
+          repository: frno7/iopmod
+          path: iopmod
+
+      - name: test
         run: |
-          git clone https://github.com/frno7/iopmod
           cd iopmod
           make tool LDFLAGS=-static V=1
 
       - name: Check executable audsrv.irx
         run: |
+          ls -lR
           cd $PS2DEV/ps2sdk/iop/irx
           ${{ matrix.values.prefix }}-readelf -l audsrv.irx
           ${{ matrix.values.prefix }}-objdump -h audsrv.irx
           ${{ matrix.values.prefix }}-objdump -s -j .iopmod audsrv.irx
-          ./iopmod/tool/iopmod-info audsrv.irx
+          iopmod/tool/iopmod-info audsrv.irx
 
       - name: Check executable poweroff.irx
         run: |
