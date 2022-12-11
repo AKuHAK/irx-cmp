@@ -39,13 +39,11 @@ jobs:
 
       - name: Check executable audsrv.irx
         run: |
-          ls -lR
           cd $PS2DEV/ps2sdk/iop/irx
           ${{ matrix.values.prefix }}-readelf -l audsrv.irx
           ${{ matrix.values.prefix }}-objdump -h audsrv.irx
           ${{ matrix.values.prefix }}-objdump -s -j .iopmod audsrv.irx
-          ls -lR ./iopmod/tool/
-          ./iopmod/tool/iopmod-info audsrv.irx
+          $GITHUB_WORKSPACE/iopmod/tool/iopmod-info audsrv.irx
 
       - name: Check executable poweroff.irx
         run: |
@@ -53,9 +51,9 @@ jobs:
           ${{ matrix.values.prefix }}-readelf -l poweroff.irx
           ${{ matrix.values.prefix }}-objdump -h poweroff.irx
           ${{ matrix.values.prefix }}-objdump -s -j .iopmod poweroff.irx
-          ./iopmod/tool/iopmod-info poweroff.irx
+          $GITHUB_WORKSPACE/iopmod/tool/iopmod-info poweroff.irx
 
       - name: Binutils version
         run: |
           ${{ matrix.values.prefix }}-readelf --version
-          ./iopmod/tool/iopmod-info --version
+          $GITHUB_WORKSPACE/iopmod/tool/iopmod-info --version
