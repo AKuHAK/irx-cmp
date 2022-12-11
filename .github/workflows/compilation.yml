@@ -44,7 +44,8 @@ jobs:
           ${{ matrix.values.prefix }}-readelf -l audsrv.irx
           ${{ matrix.values.prefix }}-objdump -h audsrv.irx
           ${{ matrix.values.prefix }}-objdump -s -j .iopmod audsrv.irx
-          iopmod/tool/iopmod-info audsrv.irx
+          ls -lR ./iopmod/tool/
+          ./iopmod/tool/iopmod-info audsrv.irx
 
       - name: Check executable poweroff.irx
         run: |
